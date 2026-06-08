@@ -8,6 +8,7 @@ set -e
 # Shared files
 mkdir -p /tmp/agents-bootstrap
 
+git fetch agents-bootstrap
 git --work-tree=/tmp/agents-bootstrap restore \
   --source=agents-bootstrap/main \
   --worktree shared

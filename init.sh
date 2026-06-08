@@ -14,7 +14,7 @@ mkdir -p $DIR
 
 if [ ! -f .gitignore ]; then
     touch .gitignore
-if
+fi
 
 grep -qxF $DIR .gitignore || echo $DIR >> .gitignore
 grep -qxF AGENTS.md .gitignore || echo $DIR >> .gitignore

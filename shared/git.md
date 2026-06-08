@@ -7,7 +7,8 @@ source: shared/git.md
 
 ## Objetivo
 
-Estas instruções definem como um agente de IA deve utilizar Git em qualquer repositório. O objetivo é garantir rastreabilidade, segurança, isolamento de mudanças e facilidade de revisão.
+Estas instruções definem como um agente de IA deve utilizar Git em qualquer repositório. 
+O objetivo é garantir rastreabilidade, segurança, isolamento de mudanças e facilidade de revisão.
 
 ---
 
@@ -39,19 +40,9 @@ Para cada solicitação, correção, melhoria ou experimento:
 git fetch --all --prune
 ```
 
-### 2. Identificar a branch base
+### 2. Branch base
 
-Normalmente:
-
-```bash
-main
-```
-
-ou
-
-```bash
 develop
-```
 
 ### 3. Criar uma nova branch
 
@@ -64,10 +55,10 @@ tipo/descricao-curta
 Exemplos:
 
 ```bash
-git checkout main
-git pull origin main
+git checkout develop
+git pull origin develop
 
-git checkout -b feature/adicionar-relatorio
+git checkout -b feat/adicionar-relatorio
 ```
 
 ```bash
@@ -84,10 +75,9 @@ Modificar apenas os arquivos necessários para a tarefa.
 
 ### 5. Validar alterações
 
-Executar:
+Executar quando disponivel:
 
 - Testes automatizados
-- Linters
 - Verificações de qualidade
 - Build do projeto quando aplicável
 
@@ -137,7 +127,7 @@ Utilizar um dos prefixos abaixo:
 
 | Tipo | Exemplo |
 |--------|----------|
-| feature | feature/nova-funcionalidade |
+| feat | feat/nova-funcionalidade |
 | fix | fix/corrigir-bug |
 | hotfix | hotfix/correcao-urgente |
 | refactor | refactor/reorganizar-servico |
@@ -166,7 +156,7 @@ O agente de IA deve:
 Antes de finalizar qualquer tarefa:
 
 - [ ] Foi criada uma nova branch.
-- [ ] Nenhuma alteração foi feita diretamente em `main` ou `master`.
+- [ ] Nenhuma alteração foi feita diretamente em `main`, `master` ou `develop`.
 - [ ] Os testes foram executados.
 - [ ] Os commits possuem mensagens claras.
 - [ ] A branch foi enviada para o remoto.

@@ -34,7 +34,6 @@ gh pr create --title "título" --body "$(cat <<'EOF'
 ## Plano de testes
 - [ ] ...
 
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
 EOF
 )"
 ```

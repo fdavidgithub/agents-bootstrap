@@ -17,7 +17,7 @@ if [ ! -f .gitignore ]; then
 fi
 
 grep -qxF $DIR .gitignore || echo $DIR >> .gitignore
-grep -qxF AGENTS.md .gitignore || echo $DIR >> .gitignore
+grep -qxF AGENTS.md .gitignore || echo AGENTS.md >> .gitignore
 
 # Shared files
 mkdir -p /tmp/agents-bootstrap

@@ -1,6 +1,6 @@
 ---
 managed-by: agents-bootstrap
-source: shared/AGENDS.md
+source: shared/AGENTS.md
 ---
 
 # Agentes de IA — Instruções do Projeto
@@ -101,4 +101,9 @@ Isso inclui:
 
 Se o código existente usar outro idioma, o novo código ainda deve seguir a
 regra do inglês.
+
+------------------------------------------------------------------------
+Para saber como lidar com o repositório, consulte:
+`.agents-bootstrap/git.md`
+`.agents-bootstrap/github.md`
 

@@ -39,3 +39,13 @@ git --work-tree=/tmp/agents-bootstrap restore \
 mkdir -p docs
 cp -rn /tmp/agents-bootstrap/templates/. docs/
 
+# Git hook: run agents.sh sync after git pull
+HOOK_FILE="$(git rev-parse --git-dir)/hooks/post-merge"
+
+cat > "$HOOK_FILE" << 'EOF'
+#!/usr/bin/env bash
+agents.sh sync
+EOF
+
+chmod +x "$HOOK_FILE"
+

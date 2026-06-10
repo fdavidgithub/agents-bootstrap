@@ -1,57 +1,90 @@
-# Prompt Repository
+# agents-bootstrap
 
-Este repositório contém os prompts, instruções e arquivos utilizados pelos agentes de IA.
+Repositório de prompts, instruções e templates utilizados por agentes de IA. Distribui arquivos compartilhados e de configuração para outros repositórios Git via o comando `agents.sh`.
 
-## Instalação em um Novo Repositório
+## O que é instalado
 
-Para instalar e configurar os prompts em um novo repositório, execute:
+Ao inicializar um repositório com este bootstrap, são criados:
 
-```bash
-./init.sh
-```
+- `.agents-bootstrap/` — arquivos gerenciados (não versionados): `AGENTS.md`, `git.md`, `github.md`
+- `AGENTS.md` — symlink para `.agents-bootstrap/AGENTS.md` (não versionado)
+- `docs/guidelines/` — templates de documentação do projeto (versionados)
+- Hook `post-merge` — executa `agents.sh sync` automaticamente após `git pull`
 
-O script `init.sh` realiza a configuração inicial necessária, copiando os arquivos e estruturas necessárias para o funcionamento dos agentes.
+## Instalação do comando `agents.sh`
 
-## Mantendo os Prompts Atualizados
-
-Após a instalação inicial, utilize o comando abaixo sempre que desejar sincronizar as atualizações mais recentes deste repositório:
-
-```bash
-./sync.sh
-```
-
-O script `sync.sh` atualiza os prompts e demais arquivos gerenciados sem a necessidade de executar novamente a instalação completa.
-
-## Fluxo Recomendado
-
-### Novo Repositório
+Torne o script executável e disponível no PATH:
 
 ```bash
-git clone <repositorio>
-cd <repositorio>
-
-./init.sh
+chmod +x /caminho/para/agents-bootstrap/agents.sh
+ln -s /caminho/para/agents-bootstrap/agents.sh ~/.local/bin/agents.sh
 ```
 
-### Atualizações Futuras
+## Configuração
+
+Antes de usar, aponte o `agents.sh` para o diretório deste repositório:
 
 ```bash
-./sync.sh
+agents.sh conf
 ```
 
-## Boas Práticas
+O comando solicita o caminho absoluto do repositório `agents-bootstrap` e salva em `~/.config/agent-bootstrap/repo_path`.
 
-* Execute `init.sh` apenas durante a configuração inicial.
-* Utilize `sync.sh` regularmente para receber correções e melhorias.
-* Revise as alterações sincronizadas antes de realizar commits.
-* Siga as diretrizes definidas nos documentos de governança e uso de Git presentes neste repositório.
+## Uso
 
-## Resumo
+### Inicializar um novo repositório
 
-| Ação                    | Comando          |
-| ----------------------- | ---------------- |
-| Instalação inicial      | `./init.sh` |
-| Atualização dos prompts | `./sync.sh`      |
+Execute dentro do repositório Git que deseja configurar:
 
-Sempre utilize `init.sh` para configurar um novo repositório e `sync.sh` para manter os arquivos sincronizados com a versão mais recente.
+```bash
+agents.sh init
+```
 
+Isso adiciona o remote `agents-bootstrap`, copia os arquivos compartilhados, cria o symlink `AGENTS.md` e instala o hook `post-merge`.
+
+### Sincronizar atualizações
+
+Para trazer as versões mais recentes dos arquivos compartilhados:
+
+```bash
+agents.sh sync
+```
+
+Os arquivos em `docs/guidelines/` só são copiados se ainda não existirem (não sobrescreve personalizações).
+
+### Verificar configuração atual
+
+```bash
+agents.sh conf
+```
+
+Exibe o repositório configurado e permite alterar o caminho.
+
+## Fluxo recomendado
+
+### Novo repositório
+
+```bash
+# 1. Configurar (uma única vez por máquina)
+agents.sh conf
+
+# 2. Inicializar o repositório alvo
+cd /caminho/do/seu/projeto
+agents.sh init
+```
+
+### Atualizações futuras
+
+```bash
+agents.sh sync
+```
+
+Após `git pull` em repositórios inicializados, o sync ocorre automaticamente via hook.
+
+## Resumo dos comandos
+
+| Comando          | Ação                                           |
+| ---------------- | ---------------------------------------------- |
+| `agents.sh conf` | Configura (ou exibe) o caminho do repositório  |
+| `agents.sh init` | Inicializa um repositório Git com o bootstrap  |
+| `agents.sh sync` | Sincroniza os arquivos compartilhados          |

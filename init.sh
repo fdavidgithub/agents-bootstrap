@@ -31,3 +31,11 @@ cp -R /tmp/agents-bootstrap/shared/* $DIR/
 ## AGENTS.md
 ln -sf $DIR/AGENTS.md AGENTS.md
 
+# Template files (only copy if destination does not exist)
+git --work-tree=/tmp/agents-bootstrap restore \
+  --source=agents-bootstrap/main \
+  --worktree templates
+
+mkdir -p docs
+cp -rn /tmp/agents-bootstrap/templates/. docs/
+

@@ -28,6 +28,11 @@ Consulte os seguintes documentos quando relevante:
 -   docs/guidelines/database.md → estrutura do banco de dados e padrões de acesso
 
 Se uma regra existir nesses documentos, ela deve ser seguida.
+Se alguma regra do projeto foi alterada, esses documentos devem ser atualizados para refletir a mudança.
+Se os arquivos estiverem com placeholders ou em formato de template, preencha-os com informações
+derivadas do código-fonte do projeto (arquivos, estrutura, configurações, dependências).
+Não invente informações. Se a informação não puder ser inferida do código, mantenha o placeholder
+para ser preenchido em outra sessão.
 
 ### Idioma da Documentação
 

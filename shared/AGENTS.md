@@ -108,7 +108,13 @@ Se o código existente usar outro idioma, o novo código ainda deve seguir a
 regra do inglês.
 
 ------------------------------------------------------------------------
-Para saber como lidar com o repositório, consulte:
-`.agents-bootstrap/git.md`
-`.agents-bootstrap/github.md`
+
+## Leitura Obrigatória Antes de Qualquer Ação
+
+Antes de escrever código, criar arquivos ou executar comandos git, leia:
+
+  1. `.agents-bootstrap/git.md` — regras de branching e commits
+  2. `.agents-bootstrap/github.md` — regras de Pull Request
+
+Não inicie nenhuma tarefa sem ter lido esses arquivos na sessão atual.
 

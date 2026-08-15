@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(rm:*)",
+      "Read(.env)",
+      "Read(**/.env*)"
+    ]
+  }
+}

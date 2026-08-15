@@ -16,9 +16,6 @@ if [ ! -f .gitignore ]; then
     touch .gitignore
 fi
 
-grep -qxF $DIR .gitignore || echo $DIR >> .gitignore
-grep -qxF AGENTS.md .gitignore || echo AGENTS.md >> .gitignore
-
 # Shared files
 mkdir -p /tmp/agents-bootstrap
 
@@ -27,6 +24,19 @@ git --work-tree=/tmp/agents-bootstrap restore \
   --worktree shared
 
 cp -R /tmp/agents-bootstrap/shared/* $DIR/
+
+## Config folders (copied as hidden folders in the project root)
+git --work-tree=/tmp/agents-bootstrap restore \
+  --source=agents-bootstrap/main \
+  --worktree config
+
+"$(dirname "$0")/sync_config.sh" /tmp/agents-bootstrap/config
+
+## .gitignore entries (source of truth: config/gitignore)
+while IFS= read -r pattern; do
+    [ -n "$pattern" ] || continue
+    grep -qxF "$pattern" .gitignore || echo "$pattern" >> .gitignore
+done < /tmp/agents-bootstrap/config/gitignore
 
 ## AGENTS.md
 ln -sf $DIR/AGENTS.md AGENTS.md

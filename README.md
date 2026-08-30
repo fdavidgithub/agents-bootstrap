@@ -8,7 +8,8 @@ Ao inicializar um repositório com este bootstrap, são criados:
 
 - `.agents-bootstrap/` — arquivos gerenciados (não versionados): `AGENTS.md`, `git.md`, `github.md`
 - `AGENTS.md` — symlink para `.agents-bootstrap/AGENTS.md` (não versionado)
-- Pastas ocultas de configuração (ex.: `.opencode/`), copiadas de `config/<tool>/` — não versionadas
+- Pastas ocultas de configuração (ex.: `.claude/`), copiadas de `config/<tool>/` — não versionadas
+- `opencode.json` — copiado de `config/opencode/` para a **raiz** do projeto (não em `.opencode/`), pois é onde o opencode lê a config do projeto — não versionado
 - `docs/guidelines/` — templates de documentação do projeto (versionados)
 - Hook `post-merge` — executa `agents.sh sync` automaticamente após `git pull`
 
@@ -53,7 +54,7 @@ agents.sh sync
 
 Os arquivos em `docs/guidelines/` só são copiados se ainda não existirem (não sobrescreve personalizações).
 
-As pastas de config (`config/<tool>/`) são copiadas para a raiz como pasta oculta (`.<tool>/`). Se o destino já existir e houver terminal, o sync pergunta antes de sobrescrever (`O` sobrescrever / `S` pular / `A` abortar). Em execuções não interativas (ex.: hook `post-merge`), pastas existentes são sobrescritas sem perguntar.
+As pastas de config (`config/<tool>/`) são copiadas para a raiz como pasta oculta (`.<tool>/`) — com a exceção de `config/opencode/`, cujos arquivos vão direto para a raiz do projeto (ex.: `opencode.json`), pois é ali que o opencode espera encontrar a config do projeto. Se o destino já existir e houver terminal, o sync pergunta antes de sobrescrever (`O` sobrescrever / `S` pular / `A` abortar). Em execuções não interativas (ex.: hook `post-merge`), pastas/arquivos existentes são sobrescritos sem perguntar.
 
 ### Verificar configuração atual
 

@@ -6,7 +6,7 @@ Repositório de prompts, instruções e templates utilizados por agentes de IA. 
 
 Ao inicializar um repositório com este bootstrap, são criados:
 
-- `.agents-bootstrap/` — arquivos gerenciados (não versionados): `AGENTS.md`, `git.md`, `github.md`
+- `.agents-bootstrap/` — arquivos gerenciados (não versionados): `AGENTS.md`, `git.md`, `github.md`, `application_health.md`
 - `AGENTS.md` — symlink para `.agents-bootstrap/AGENTS.md` (não versionado)
 - Pastas ocultas de configuração (ex.: `.claude/`), copiadas de `config/<tool>/` — não versionadas
 - `opencode.json` — copiado de `config/opencode/` para a **raiz** do projeto (não em `.opencode/`), pois é onde o opencode lê a config do projeto — não versionado
@@ -63,6 +63,38 @@ agents.sh conf
 ```
 
 Exibe o repositório configurado e permite alterar o caminho.
+
+## Saúde da aplicação (acoplamento)
+
+Este repositório traz scripts que medem o acoplamento aferente (`Ca`) e eferente
+(`Ce`) dos arquivos e pastas de um projeto, sem nenhuma dependência além de
+`bash` e `awk`. Eles não são copiados para dentro do projeto: rodam a partir
+daqui, sobre o diretório atual. A partir da raiz do projeto a analisar:
+
+```bash
+BOOTSTRAP="$(cat ~/.config/agent-bootstrap/repo_path)"
+bash "$BOOTSTRAP/scripts/coupling_metrics.sh"
+```
+
+O grafo bruto de dependências, uma aresta por linha, sai de:
+
+```bash
+bash "$BOOTSTRAP/scripts/coupling_graph.sh"
+```
+
+As instruções completas — opções, como ler `Ca`, `Ce` e a instabilidade
+`I = Ce / (Ca + Ce)`, limitações por linguagem e o relatório a produzir em
+`docs/application_health.md` — estão em `shared/application_health.md`, que é
+distribuído como `.agents-bootstrap/application_health.md` nos projetos.
+
+## Estrutura do repositório
+
+| Pasta            | Papel                                                                        |
+| ---------------- | ---------------------------------------------------------------------------- |
+| `shared/`        | Arquivos distribuídos para `.agents-bootstrap/` nos projetos inicializados    |
+| `scripts/`       | Scripts executados a partir deste repositório, não distribuídos               |
+| `config/`        | Configurações por ferramenta, copiadas para a raiz do projeto                 |
+| `templates/`     | Templates de `docs/`, copiados apenas se ainda não existirem                  |
 
 ## Fluxo recomendado
 

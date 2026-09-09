@@ -80,6 +80,18 @@ Toda nova lógica deve incluir testes seguindo `docs/guidelines/testing.md`.
 
 ------------------------------------------------------------------------
 
+## Saúde da Aplicação
+
+Para qualquer questão sobre a saúde da aplicação — acoplamento entre arquivos e
+pastas, fronteiras de módulo, dependências internas, pontos de risco na
+estrutura — consulte `.agents-bootstrap/application_health.md`.
+
+Esse arquivo descreve os scripts disponíveis, como executá-los, como interpretar
+as métricas e qual relatório produzir. Não improvise a análise nem invente uma
+forma própria de medir: siga o que está definido lá.
+
+------------------------------------------------------------------------
+
 ## Quando a Documentação Estiver Ausente
 
 Se a documentação não especificar um padrão:

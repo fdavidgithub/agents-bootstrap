@@ -74,7 +74,7 @@ bash "$BOOTSTRAP/scripts/coupling_metrics.sh" --dir ./packages/api
 
 Basta pedir *"analise a saúde da aplicação"*. O `AGENTS.md` do projeto
 direciona o agente para este arquivo, que traz os comandos, a interpretação dos
-números e o formato do relatório a escrever em `docs/application_health.md`.
+números e o formato do relatório a escrever em `docs/application/health.md`.
 
 ---
 
@@ -266,7 +266,7 @@ bruto antes de concluir. Uma limitação acima costuma explicar a diferença.
 ## O que produzir
 
 Depois de executar os scripts, escreva o resultado em
-`docs/application_health.md`, em português brasileiro, contendo:
+`docs/application/health.md`, em português brasileiro, contendo:
 
 1. **Data da análise e comando executado** — para que o relatório possa ser
    reproduzido.
@@ -291,3 +291,5 @@ Regras para o relatório:
 - Relacione os achados com `docs/guidelines/architecture.md`. Quando o
   acoplamento medido contrariar a arquitetura documentada, aponte o conflito;
   não altere a arquitetura por conta própria.
+- Se `docs/application/health.md` já existir, sobrescreva-o por completo com o
+  novo relatório — não acumule análises anteriores.

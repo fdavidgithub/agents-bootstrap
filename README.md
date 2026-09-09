@@ -84,7 +84,7 @@ bash "$BOOTSTRAP/scripts/coupling_graph.sh"
 
 As instruções completas — opções, como ler `Ca`, `Ce` e a instabilidade
 `I = Ce / (Ca + Ce)`, limitações por linguagem e o relatório a produzir em
-`docs/application_health.md` — estão em `shared/application_health.md`, que é
+`docs/application/health.md` — estão em `shared/application_health.md`, que é
 distribuído como `.agents-bootstrap/application_health.md` nos projetos.
 
 ## Estrutura do repositório

@@ -11,7 +11,7 @@ Ao inicializar um repositório com este bootstrap, são criados:
 - Pastas ocultas de configuração (ex.: `.claude/`), copiadas de `config/<tool>/` — não versionadas
 - `opencode.json` — copiado de `config/opencode/` para a **raiz** do projeto (não em `.opencode/`), pois é onde o opencode lê a config do projeto — não versionado
 - `docs/guidelines/` — templates de documentação do projeto (versionados)
-- `docs/version.md` — versão do projeto (Semantic Versioning) e histórico de incrementos MINOR/MAJOR, mantido pelo agente (versionado)
+- `docs/application/version.md` — versão do projeto (Semantic Versioning) e histórico de incrementos MINOR/MAJOR, mantido pelo agente (versionado)
 - Hook `post-merge` — executa `agents.sh sync` automaticamente após `git pull`
 
 ## Instalação do comando `agents.sh`
@@ -53,7 +53,7 @@ Para trazer as versões mais recentes dos arquivos compartilhados:
 agents.sh sync
 ```
 
-Os arquivos em `docs/guidelines/` e `docs/version.md` só são copiados se ainda não existirem (não sobrescreve personalizações).
+Os arquivos em `docs/guidelines/` e `docs/application/version.md` só são copiados se ainda não existirem (não sobrescreve personalizações).
 
 As pastas de config (`config/<tool>/`) são copiadas para a raiz como pasta oculta (`.<tool>/`) — com a exceção de `config/opencode/`, cujos arquivos vão direto para a raiz do projeto (ex.: `opencode.json`), pois é ali que o opencode espera encontrar a config do projeto. Se o destino já existir e houver terminal, o sync pergunta antes de sobrescrever (`O` sobrescrever / `S` pular / `A` abortar). Em execuções não interativas (ex.: hook `post-merge`), pastas/arquivos existentes são sobrescritos sem perguntar.
 

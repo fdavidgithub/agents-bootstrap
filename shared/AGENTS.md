@@ -26,7 +26,7 @@ Consulte os seguintes documentos quando relevante:
 -   docs/guidelines/coding-standards.md → padrões de estilo e estrutura de código
 -   docs/guidelines/testing.md → diretrizes de testes
 -   docs/guidelines/database.md → estrutura do banco de dados e padrões de acesso
--   docs/version.md → versão atual do projeto e histórico de incrementos MINOR/MAJOR
+-   docs/application/version.md → versão atual do projeto e histórico de incrementos MINOR/MAJOR
 
 Se uma regra existir nesses documentos, ela deve ser seguida.
 Se alguma regra do projeto foi alterada, esses documentos devem ser atualizados para refletir a mudança.
@@ -84,7 +84,7 @@ Toda nova lógica deve incluir testes seguindo `docs/guidelines/testing.md`.
 ## Controle de Versão
 
 O projeto segue o padrão Semantic Versioning (`MAJOR.MINOR.PATCH`).
-A versão atual e o histórico ficam em `docs/version.md` — nunca neste arquivo,
+A versão atual e o histórico ficam em `docs/application/version.md` — nunca neste arquivo,
 que é compartilhado entre projetos e sobrescrito a cada sincronização.
 
 Regras:
@@ -99,12 +99,12 @@ Regras:
 
 Responsabilidade do agente:
 
--   Incrementar a versão em `docs/version.md` como parte da própria alteração:
+-   Incrementar a versão em `docs/application/version.md` como parte da própria alteração:
     no último commit da branch antes de abrir o Pull Request, ou no próprio
     commit quando for um commit direto. Assim o merge já leva a nova versão.
 -   Ao incrementar `MINOR` ou `MAJOR`, registrar a nova versão, a data e a
-    justificativa no histórico de `docs/version.md`.
--   Se `docs/version.md` não existir, criá-lo a partir do template do
+    justificativa no histórico de `docs/application/version.md`.
+-   Se `docs/application/version.md` não existir, criá-lo a partir do template do
     agents-bootstrap com a versão `0.0.1`, que já corresponde à alteração
     atual (não aplicar outro incremento sobre ela).
     Não reprocessar o histórico do repositório para deduzir uma versão: a
@@ -115,7 +115,7 @@ Responsabilidade do agente:
 O que o agente NÃO faz:
 
 -   Criar tags git, releases ou publicar a versão em qualquer outro lugar.
-    `docs/version.md` é apenas o registro da versão; criar a tag ou a release
+    `docs/application/version.md` é apenas o registro da versão; criar a tag ou a release
     correspondente é uma operação manual, sempre feita pelo usuário.
 -   Alterar a versão em outros arquivos do projeto (ex.: `package.json`,
     `pyproject.toml`) sem pedido explícito do usuário.

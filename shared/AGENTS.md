@@ -87,15 +87,24 @@ O projeto segue o padrão Semantic Versioning (`MAJOR.MINOR.PATCH`).
 A versão atual e o histórico ficam em `docs/application/version.md` — nunca neste arquivo,
 que é compartilhado entre projetos e sobrescrito a cada sincronização.
 
+Um projeto pode ter uma versão única ou uma versão por app (quando o repositório
+reúne mais de uma aplicação). `docs/application/version.md` declara qual é o caso:
+se ele tiver uma tabela de versões por app, cada app tem a sua versão e o seu
+histórico, e as regras abaixo valem para cada app separadamente, conforme a
+seção "Versão por app" desse arquivo.
+
 Regras:
 
--   Todo merge de Pull Request ou commit direto incrementa o `PATCH`.
+-   Todo merge de Pull Request ou commit direto incrementa o `PATCH`. Com versão
+    por app, incrementa o `PATCH` de cada app afetado pela alteração; o próprio
+    `docs/application/version.md` define quais caminhos afetam cada app e quais
+    alterações não sobem versão nenhuma.
 -   `MINOR` é incrementado quando há nova funcionalidade compatível com versões
     anteriores; zera o `PATCH`.
 -   `MAJOR` é incrementado quando há mudança incompatível com versões
     anteriores; zera `MINOR` e `PATCH`.
--   Cada alteração incrementa apenas um componente: se couber `MINOR` ou
-    `MAJOR`, ele substitui o incremento do `PATCH`.
+-   Cada alteração incrementa apenas um componente (por app, com versão por
+    app): se couber `MINOR` ou `MAJOR`, ele substitui o incremento do `PATCH`.
 
 Responsabilidade do agente:
 
@@ -103,7 +112,8 @@ Responsabilidade do agente:
     no último commit da branch antes de abrir o Pull Request, ou no próprio
     commit quando for um commit direto. Assim o merge já leva a nova versão.
 -   Ao incrementar `MINOR` ou `MAJOR`, registrar a nova versão, a data e a
-    justificativa no histórico de `docs/application/version.md`.
+    justificativa no histórico de `docs/application/version.md` (no histórico
+    do app correspondente, com versão por app).
 -   Se `docs/application/version.md` não existir, criá-lo a partir do template do
     agents-bootstrap com a versão `0.0.1`, que já corresponde à alteração
     atual (não aplicar outro incremento sobre ela).

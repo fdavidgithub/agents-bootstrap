@@ -7,75 +7,62 @@ source: shared/git.md
 
 ## Objetivo
 
-Estas instruções definem como um agente de IA deve utilizar Git em qualquer repositório. 
-O objetivo é garantir rastreabilidade, segurança, isolamento de mudanças e facilidade de revisão.
+Estas instruções definem como um agente de IA deve utilizar Git em qualquer repositório.
+O objetivo é garantir rastreabilidade, segurança, isolamento de mudanças, facilidade de revisão
+e **trabalho em paralelo** de vários agentes no mesmo repositório.
 
 ---
 
 ## Regra Obrigatória
 
-**Toda alteração deve ser realizada em uma nova branch.**
+**Toda alteração deve ser realizada em uma worktree isolada, criada exclusivamente com `scripts/git-worktree.sh`.**
 
 É proibido:
 
 - Trabalhar diretamente em `main`, `master`, `develop` ou qualquer branch protegida.
-- Reutilizar uma branch antiga para uma nova tarefa.
+- Trabalhar no diretório principal do repositório (a raiz); todo o trabalho acontece em `.worktree/<branch>`.
+- **Criar branch por conta própria** (`git branch`, `git checkout -b`, `git switch -c`, `git worktree add` direto etc.).
+  Trocar de branch no diretório principal impede o trabalho em paralelo. A única forma permitida de
+  criar uma branch é o `git-worktree.sh`, que cria branch e worktree juntas.
+- Trocar de branch (`git checkout`, `git switch`) dentro de uma worktree.
+- Reutilizar uma branch/worktree antiga para uma nova tarefa.
 - Misturar alterações de tarefas diferentes na mesma branch.
-
-Para cada solicitação, correção, melhoria ou experimento:
-
-1. Atualizar as referências remotas.
-2. Criar uma nova branch.
-3. Realizar as alterações nessa branch.
-4. Registrar commits descritivos.
-5. Abrir um Pull Request (ou equivalente) para revisão.
 
 ---
 
 ## Fluxo Obrigatório
 
-### 1. Atualizar o repositório
+### 1. Criar a worktree
 
 ```bash
-git fetch --all --prune
+scripts/git-worktree.sh tipo/descricao-curta
 ```
 
-### 2. Branch base
+O script:
 
-develop
+- atualiza a `develop` local (`git pull --ff-only`) e **sempre** cria a worktree a partir dela
+  (aborta se a `develop` local não existir ou não puder ser atualizada);
+- cria a branch e a worktree em `<repo>/.worktree/<branch>` (barras da branch viram `-`);
+- cria links simbólicos para `.env` e `.env.e2e` quando existirem;
+- informa no output a base, a branch, o caminho e os links criados.
 
-### 3. Criar uma nova branch
+Se o script abortar, **não contorne com comandos git manuais**: corrija a causa (ou reporte ao usuário) e rode novamente.
 
-Formato recomendado:
-
-```text
-tipo/descricao-curta
-```
-
-Exemplos:
+Em seguida, entre na worktree e trabalhe somente nela:
 
 ```bash
-git checkout develop
-git pull origin develop
-
-git checkout -b feat/adicionar-relatorio
+cd .worktree/tipo-descricao-curta
 ```
 
-```bash
-git checkout -b fix/corrigir-validacao
-```
+Nunca versione os links `.env`/`.env.e2e` nem o diretório `.worktree/`.
 
-```bash
-git checkout -b docs/atualizar-instrucoes
-```
+### 2. Realizar alterações
 
-### 4. Realizar alterações
+Modificar apenas os arquivos necessários para a tarefa, dentro da worktree.
 
-Modificar apenas os arquivos necessários para a tarefa.
+### 3. Validar alterações
 
-### 5. Validar alterações
-
-Executar quando disponivel:
+Executar quando disponível:
 
 - Testes automatizados
 - Verificações de qualidade
@@ -93,7 +80,7 @@ ou
 pytest
 ```
 
-### 6. Criar commits claros
+### 4. Criar commits claros
 
 Exemplos:
 
@@ -109,21 +96,22 @@ git commit -m "fix: corrige validação de e-mail"
 git commit -m "docs: atualiza guia de instalação"
 ```
 
-### 7. Publicar a branch
+### 5. Publicar a branch
 
 ```bash
 git push -u origin nome-da-branch
 ```
 
-### 8. Abrir Pull Request
+### 6. Abrir Pull Request
 
-Toda alteração deve ser revisada através de Pull Request antes de ser incorporada à branch principal.
+Toda alteração deve ser revisada através de Pull Request antes de ser incorporada,
+com base na `develop`.
 
 ---
 
 ## Convenção de Nomes de Branch
 
-Utilizar um dos prefixos abaixo:
+Utilizar um dos prefixos abaixo (nome passado como argumento ao `git-worktree.sh`):
 
 | Tipo | Exemplo |
 |--------|----------|
@@ -141,13 +129,15 @@ Utilizar um dos prefixos abaixo:
 
 O agente de IA deve:
 
-- Confirmar a branch atual antes de modificar arquivos.
-- Verificar se está fora de `main` e `master`.
-- Criar uma nova branch mesmo para alterações pequenas.
+- Confirmar (`pwd` e `git branch --show-current`) que está dentro de `.worktree/<branch>` antes de modificar arquivos.
+- Verificar se está fora de `main`, `master` e `develop`.
+- Usar uma worktree nova mesmo para alterações pequenas.
+- Nunca ler, imprimir, copiar ou commitar o conteúdo de `.env` / `.env.e2e`.
 - Evitar commits contendo arquivos temporários.
 - Não forçar push (`--force`) sem autorização explícita.
 - Não reescrever histórico compartilhado.
 - Não excluir branches remotas sem autorização explícita.
+- Não remover worktrees de outros agentes (`git worktree remove`/`prune`) sem autorização explícita.
 
 ---
 
@@ -155,18 +145,19 @@ O agente de IA deve:
 
 Antes de finalizar qualquer tarefa:
 
-- [ ] Foi criada uma nova branch.
+- [ ] A worktree foi criada com `scripts/git-worktree.sh` (nenhuma branch criada manualmente).
+- [ ] Todo o trabalho foi feito dentro de `.worktree/<branch>`.
 - [ ] Nenhuma alteração foi feita diretamente em `main`, `master` ou `develop`.
 - [ ] Os testes foram executados.
 - [ ] Os commits possuem mensagens claras.
 - [ ] A branch foi enviada para o remoto.
 - [ ] Um Pull Request foi preparado ou aberto.
+- [ ] A PR segue o `github.md` (incluindo o trailer `<agente>-session: <id>`).
 
 ---
 
 ## Resumo
 
-A regra principal é simples:
-
-> Nenhuma alteração pode ser realizada diretamente na branch principal. Toda tarefa, independentemente do tamanho, deve começar com a criação de uma nova branch exclusiva.
-
+> Nenhuma alteração pode ser realizada na branch principal nem no diretório principal do repositório.
+> Toda tarefa começa com `scripts/git-worktree.sh`, é feita na worktree criada por ele, e a PR termina com a sessão do agente.
+> O agente nunca cria branches por conta própria.

@@ -11,8 +11,16 @@ a API diretamente ou construa URLs manualmente.
 ### Criar issue
 
 ```bash
-gh issue create --title "título" --body "descrição"
+gh issue create --title "título" --body "$(cat <<'EOF'
+descrição
+
+<agente>-session: <id-da-sessao>
+EOF
+)"
 ```
+
+O corpo da issue deve terminar com o trailer da sessão do agente (ver
+[Trailer com a sessão do agente](#trailer-com-a-sessão-do-agente)).
 
 ### Implementar uma issue
 
@@ -42,8 +50,8 @@ A PR deve ter a `develop` como base (`--base develop`).
 
 ### Trailer com a sessão do agente
 
-O final do corpo da PR deve conter, como trailer, a sessão do agente que a gerou
-(última linha do corpo, separada do texto por uma linha em branco), no padrão
+O final do corpo da PR **e da issue** deve conter, como trailer, a sessão do agente
+que a gerou (última linha do corpo, separada do texto por uma linha em branco), no padrão
 `<agente>-session: <id>`, onde `<agente>` é o nome do agente em minúsculas
 (indica onde recuperar o ID):
 
@@ -67,7 +75,7 @@ claude-session: 2467180b-b4fd-4294-be5f-41e9cbc3c40a
 
 Regras do trailer:
 
-- O prefixo identifica o agente que gerou a PR (ex.: `claude`, `codex`), para saber qual ferramenta usar para recuperar a sessão.
+- O prefixo identifica o agente que gerou a PR ou a issue (ex.: `claude`, `codex`), para saber qual ferramenta usar para recuperar a sessão.
 - Usar o ID real da sessão em andamento; nunca inventar ou deixar placeholder.
 - No Claude Code, o ID é o nome do arquivo `.jsonl` mais recente da sessão em
   `~/.claude/projects/<diretorio-da-worktree>/` (permite retomar com `claude --resume <id>`).

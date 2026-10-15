@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Cria uma worktree isolada em <repo>/.worktree/<branch>, SEMPRE baseada na develop,
+# Cria uma worktree isolada em <repo>/.worktrees/<branch>, SEMPRE baseada na develop,
 # apos atualizar a develop local (pull --ff-only), e linka os arquivos de credenciais existentes (LINK_FILES) do repositorio principal.
 #
 # Uso: git-worktree.sh <nome-da-branch>
@@ -68,7 +68,7 @@ else
     || die "atualizacao da ${BASE_BRANCH} falhou; nada foi criado"
 fi
 
-# --- .worktree nao pode ser versionado ------------------------------------------
+# --- .worktrees nao pode ser versionado ------------------------------------------
 if ! git -C "${REPO_ROOT}" check-ignore -q "${WORKTREE_DIR_NAME}/${WT_DIR_NAME}"; then
   printf '%s/\n' "${WORKTREE_DIR_NAME}" >> "${GIT_COMMON_DIR}/info/exclude"
   warn "${WORKTREE_DIR_NAME}/ nao estava no .gitignore; adicionado a .git/info/exclude (local)"

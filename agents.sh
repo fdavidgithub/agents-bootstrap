@@ -6,7 +6,7 @@ CONFIG_DIR="${HOME}/.config/agent-bootstrap"
 CONFIG_FILE="${CONFIG_DIR}/repo_path"
 
 usage() {
-    echo "Usage: $(basename "$0") {conf|init|sync}"
+    echo "Usage: $(basename "$0") {conf|init|sync|skill <name> [args...]}"
     exit 1
 }
 
@@ -59,6 +59,7 @@ get_repo_dir() {
 
 run_script() {
     local script_name="$1"
+    shift
     local repo_dir
 
     repo_dir="$(get_repo_dir)"
@@ -69,10 +70,28 @@ run_script() {
         exit 1
     fi
 
-    "$repo_dir/$script_name"
+    "$repo_dir/$script_name" "$@"
 }
 
-[[ $# -eq 1 ]] || usage
+run_skill() {
+    local skill_name="${1:-}"
+
+    if [[ -z "$skill_name" ]]; then
+        echo "Error: skill name is required." >&2
+        usage
+    fi
+
+    if [[ ! "$skill_name" =~ ^[A-Za-z0-9._-]+$ || "$skill_name" == .* ]]; then
+        echo "Error: invalid skill name: $skill_name" >&2
+        exit 1
+    fi
+
+    shift
+    run_script "scripts/${skill_name}.sh" "$@"
+}
+
+[[ $# -ge 1 ]] || usage
+[[ "$1" == "skill" || $# -eq 1 ]] || usage
 show_config
 
 case "$1" in
@@ -86,6 +105,10 @@ case "$1" in
     sync)
         check_git_repository
         run_script "sync.sh"
+        ;;
+    skill)
+        shift
+        run_skill "$@"
         ;;
     *)
         usage

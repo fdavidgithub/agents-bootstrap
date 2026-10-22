@@ -119,8 +119,6 @@ Responsabilidade do agente:
     atual (não aplicar outro incremento sobre ela).
     Não reprocessar o histórico do repositório para deduzir uma versão: a
     contagem começa a partir da criação do arquivo.
--   Na dúvida entre `PATCH`, `MINOR` e `MAJOR`, perguntar ao usuário em vez de
-    decidir sozinho.
 
 O que o agente NÃO faz:
 
@@ -181,4 +179,21 @@ Antes de escrever código, criar arquivos ou executar comandos git, leia:
   2. `.agents-bootstrap/github.md` — regras de Pull Request
 
 Não inicie nenhuma tarefa sem ter lido esses arquivos na sessão atual.
+
+------------------------------------------------------------------------
+
+## Onde Trabalhar Antes de Codificar ou Documentar
+
+Antes de iniciar qualquer codificação ou documentação, pergunte ao usuário onde
+o trabalho deve ser feito, informando qual é a branch atual
+(`git branch --show-current`). As opções são:
+
+1.  abrir uma nova branch;
+2.  criar um worktree;
+3.  fazer na branch atual;
+
+Não edite nenhum arquivo antes de receber a resposta. Se a branch atual for
+`main` ou `develop`, lembre que é proibido fazer commit direto nelas e
+recomende as opções 1 ou 2. As regras de nomes e de criação seguem
+`.agents-bootstrap/git.md`.
 

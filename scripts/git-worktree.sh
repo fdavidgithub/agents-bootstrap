@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Cria uma worktree isolada em <repo>/.worktrees/<branch>, SEMPRE baseada na develop,
-# apos atualizar a develop local (pull --ff-only), e linka os arquivos de credenciais existentes (LINK_FILES) do repositorio principal.
+# apos atualizar a develop local (pull --ff-only), e linka os arquivos/diretorios existentes (LINK_FILES, procurados em todo o repo) do repositorio principal.
 #
 # Uso: git-worktree.sh <nome-da-branch>
 set -euo pipefail
@@ -8,10 +8,13 @@ set -euo pipefail
 BASE_BRANCH="develop"
 WORKTREE_DIR_NAME=".worktrees"
 
-# Arquivos (relativos a raiz do repo) que devem ganhar link simbolico se existirem.
+# Nomes de arquivos/diretorios que devem ganhar link simbolico se existirem.
+# Cada nome e procurado em qualquer subdiretorio do repo (ex.: orders/dashboard/node_modules);
+# o link e criado no mesmo caminho relativo dentro da worktree.
 LINK_FILES=(
   ".env"
   ".env.e2e"
+  "node_modules"
 )
 
 die() {
@@ -77,31 +80,40 @@ fi
 # --- verificacoes de seguranca dos arquivos a linkar (antes de criar qualquer coisa)
 LINKS=()
 for name in "${LINK_FILES[@]}"; do
-  src="${REPO_ROOT}/${name}"
-  [[ -e "${src}" || -L "${src}" ]] || continue
+  # procura o nome em todo o repo, sem entrar em .git, .worktrees e node_modules
+  # (um match de node_modules nao e percorrido: evita node_modules aninhados).
+  mapfile -d '' -t found < <(find "${REPO_ROOT}" -mindepth 1 \
+    \( -name "${name}" -print0 -prune \) -o \
+    \( -name .git -o -name "${WORKTREE_DIR_NAME}" -o -name node_modules \) -prune)
 
-  if [[ -L "${src}" ]]; then
-    die "${name} e um link simbolico; recusado (aponte para um arquivo regular na raiz do repo)"
-  fi
-  [[ -f "${src}" ]] || die "${name} existe mas nao e um arquivo regular"
-  [[ -r "${src}" ]] || die "${name} existe mas nao e legivel"
+  for src in "${found[@]}"; do
+    rel="${src#"${REPO_ROOT}"/}"
 
-  real="$(realpath "${src}")"
-  [[ "${real}" == "${REPO_ROOT}/${name}" ]] || die "${name} resolve para fora do repositorio: ${real}"
+    if [[ -L "${src}" ]]; then
+      die "${rel} e um link simbolico; recusado (aponte para um arquivo ou diretorio real)"
+    fi
+    [[ -f "${src}" || -d "${src}" ]] || die "${rel} existe mas nao e arquivo regular nem diretorio"
+    [[ -r "${src}" ]] || die "${rel} existe mas nao e legivel"
 
-  if git -C "${REPO_ROOT}" ls-files --error-unmatch -- "${name}" >/dev/null 2>&1; then
-    die "${name} esta versionado (tracked) no git; credenciais nao devem ser versionadas"
-  fi
-  if ! git -C "${REPO_ROOT}" check-ignore -q -- "${name}"; then
-    die "${name} nao esta no .gitignore; risco de commitar credenciais. Adicione-o e tente novamente"
-  fi
+    real="$(realpath "${src}")"
+    [[ "${real}" == "${REPO_ROOT}/${rel}" ]] || die "${rel} resolve para fora do repositorio: ${real}"
 
-  mode="$(stat -c '%a' "${src}")"
-  if [[ "${mode: -1}" != "0" ]]; then
-    warn "${name} legivel por outros usuarios (modo ${mode}); considere chmod 600"
-  fi
+    if git -C "${REPO_ROOT}" ls-files --error-unmatch -- "${rel}" >/dev/null 2>&1; then
+      die "${rel} esta versionado (tracked) no git; nao deve ser linkado"
+    fi
+    if ! git -C "${REPO_ROOT}" check-ignore -q -- "${rel}"; then
+      die "${rel} nao esta no .gitignore; risco de commitar. Adicione-o e tente novamente"
+    fi
 
-  LINKS+=("${name}")
+    if [[ -f "${src}" ]]; then
+      mode="$(stat -c '%a' "${src}")"
+      if [[ "${mode: -1}" != "0" ]]; then
+        warn "${rel} legivel por outros usuarios (modo ${mode}); considere chmod 600"
+      fi
+    fi
+
+    LINKS+=("${rel}")
+  done
 done
 
 # --- cria a worktree ------------------------------------------------------------
@@ -110,6 +122,7 @@ git -C "${REPO_ROOT}" worktree add -b "${BRANCH}" "${WT_PATH}" "${BASE_REF}"
 
 # --- cria os links --------------------------------------------------------------
 for name in "${LINKS[@]}"; do
+  mkdir -p "$(dirname "${WT_PATH}/${name}")"
   ln -s "${REPO_ROOT}/${name}" "${WT_PATH}/${name}"
 done
 

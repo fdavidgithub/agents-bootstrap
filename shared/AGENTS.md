@@ -134,11 +134,11 @@ O que o agente NÃO faz:
 
 Para qualquer questão sobre a saúde da aplicação — acoplamento entre arquivos e
 pastas, fronteiras de módulo, dependências internas, pontos de risco na
-estrutura — consulte `.agents-bootstrap/application_health.md`.
+estrutura — use a skill `application-health`.
 
-Esse arquivo descreve os scripts disponíveis, como executá-los, como interpretar
-as métricas e qual relatório produzir. Não improvise a análise nem invente uma
-forma própria de medir: siga o que está definido lá.
+Ela descreve os scripts disponíveis, como executá-los, como interpretar as
+métricas e qual relatório produzir. Não improvise a análise nem invente uma
+forma própria de medir: siga o que está definido nela.
 
 ------------------------------------------------------------------------
 
@@ -194,6 +194,5 @@ o trabalho deve ser feito, informando qual é a branch atual
 
 Não edite nenhum arquivo antes de receber a resposta. Se a branch atual for
 `main` ou `develop`, lembre que é proibido fazer commit direto nelas e
-recomende as opções 1 ou 2. As regras de nomes e de criação seguem
-`.agents-bootstrap/git.md`.
+recomende as opções 1 ou 2. 
 

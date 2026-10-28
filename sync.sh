@@ -30,6 +30,9 @@ git --work-tree=/tmp/agents-bootstrap restore \
 
 "$(dirname "$0")/sync_config.sh" /tmp/agents-bootstrap/config
 
+## Skills (symlinked into each tool's skills folder)
+"$(dirname "$0")/scripts/link_skills.sh"
+
 ## .gitignore entries (source of truth: config/gitignore)
 if [ ! -f .gitignore ]; then
     touch .gitignore

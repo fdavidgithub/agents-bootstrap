@@ -6,7 +6,7 @@ Repositório de prompts, instruções e templates utilizados por agentes de IA. 
 
 Ao inicializar um repositório com este bootstrap, são criados:
 
-- `.agents-bootstrap/` — arquivos gerenciados (não versionados): `AGENTS.md`, `git.md`, `github.md`
+- `.agents-bootstrap/` — arquivos gerenciados (não versionados): `AGENTS.md`, `skills/`
 - `AGENTS.md` — symlink para `.agents-bootstrap/AGENTS.md` (não versionado)
 - Pastas ocultas de configuração (ex.: `.claude/`), copiadas de `config/<tool>/` — não versionadas
 - `opencode.json` — copiado de `config/opencode/` para a **raiz** do projeto (não em `.opencode/`), pois é onde o opencode lê a config do projeto — não versionado

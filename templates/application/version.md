@@ -1,7 +1,7 @@
 # Versão do Projeto
 
 Este arquivo é a fonte de verdade da versão do projeto e deve ser mantido
-atualizado pelo agente conforme a seção "Controle de Versão" do `AGENTS.md`.
+atualizado pelo agente conforme a skill `application-version`.
 
 ## Versão Atual
 

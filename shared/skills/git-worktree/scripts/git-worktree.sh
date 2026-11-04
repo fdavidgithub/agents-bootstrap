@@ -9,7 +9,8 @@ BASE_BRANCH="develop"
 WORKTREE_DIR_NAME=".worktrees"
 
 # Nomes de arquivos/diretorios que devem ganhar link simbolico se existirem.
-# Cada nome e procurado em qualquer subdiretorio do repo (ex.: orders/dashboard/node_modules);
+# Cada nome e procurado em qualquer subdiretorio do repo (ex.: orders/dashboard/node_modules),
+# exceto dentro de diretorios ja ignorados (ex.: build/x/node_modules nao e considerado);
 # o link e criado no mesmo caminho relativo dentro da worktree.
 LINK_FILES=(
   ".env"
@@ -79,41 +80,65 @@ fi
 
 # --- verificacoes de seguranca dos arquivos a linkar (antes de criar qualquer coisa)
 LINKS=()
+
+# Regex com os nomes de LINK_FILES como componente de caminho: (^|/)(nome1|nome2)(/|$)
+LINK_RE=""
 for name in "${LINK_FILES[@]}"; do
-  # procura o nome em todo o repo, sem entrar em .git, .worktrees e node_modules
-  # (um match de node_modules nao e percorrido: evita node_modules aninhados).
-  mapfile -d '' -t found < <(find "${REPO_ROOT}" -mindepth 1 \
-    \( -name "${name}" -print0 -prune \) -o \
-    \( -name .git -o -name "${WORKTREE_DIR_NAME}" -o -name node_modules \) -prune)
+  LINK_RE+="${LINK_RE:+|}$(printf '%s' "${name}" | sed 's/[][\.*^$+?(){}|/]/\\&/g')"
+done
+LINK_RE="(^|/)(${LINK_RE})(/|\$)"
 
-  for src in "${found[@]}"; do
-    rel="${src#"${REPO_ROOT}"/}"
-
-    if [[ -L "${src}" ]]; then
-      die "${rel} e um link simbolico; recusado (aponte para um arquivo ou diretorio real)"
-    fi
-    [[ -f "${src}" || -d "${src}" ]] || die "${rel} existe mas nao e arquivo regular nem diretorio"
-    [[ -r "${src}" ]] || die "${rel} existe mas nao e legivel"
-
-    real="$(realpath "${src}")"
-    [[ "${real}" == "${REPO_ROOT}/${rel}" ]] || die "${rel} resolve para fora do repositorio: ${real}"
-
-    if git -C "${REPO_ROOT}" ls-files --error-unmatch -- "${rel}" >/dev/null 2>&1; then
-      die "${rel} esta versionado (tracked) no git; nao deve ser linkado"
-    fi
-    if ! git -C "${REPO_ROOT}" check-ignore -q -- "${rel}"; then
-      die "${rel} nao esta no .gitignore; risco de commitar. Adicione-o e tente novamente"
-    fi
-
-    if [[ -f "${src}" ]]; then
-      mode="$(stat -c '%a' "${src}")"
-      if [[ "${mode: -1}" != "0" ]]; then
-        warn "${rel} legivel por outros usuarios (modo ${mode}); considere chmod 600"
-      fi
-    fi
-
-    LINKS+=("${rel}")
+is_link_name() {
+  local base="${1##*/}" name
+  for name in "${LINK_FILES[@]}"; do
+    [[ "${base}" == "${name}" ]] && return 0
   done
+  return 1
+}
+
+# Qualquer caminho com esses nomes que esteja versionado ou fora do .gitignore aborta o
+# script. Le o indice + nao-ignorados; nao entra em diretorios ignorados (node_modules,
+# dist...). O grep filtra antes de chegar ao loop em bash.
+while IFS= read -r -d '' entry; do
+  if git -C "${REPO_ROOT}" ls-files --error-unmatch -- "${entry}" >/dev/null 2>&1; then
+    die "${entry} esta versionado (tracked) no git; nao deve ser linkado"
+  fi
+  die "${entry} nao esta no .gitignore; risco de commitar. Adicione-o e tente novamente"
+done < <(git -C "${REPO_ROOT}" ls-files -z --cached --others --exclude-standard \
+  | grep -zE -- "${LINK_RE}" || true)
+
+# Uma unica consulta ao git lista tudo que e nao versionado E ignorado.
+# --directory colapsa diretorios ignorados (node_modules, dist, .venv, .worktrees...)
+# numa unica entrada, sem percorrer o conteudo: evita varrer arvores pesadas e
+# node_modules aninhados. Como so vem itens ignorados e nao versionados, dispensa
+# checar tracked/.gitignore por item.
+mapfile -d '' -t candidates < <(git -C "${REPO_ROOT}" ls-files -z \
+  --others --ignored --exclude-standard --directory | grep -zE -- "${LINK_RE}" || true)
+
+for entry in "${candidates[@]}"; do
+  rel="${entry%/}"                    # diretorios vem com '/' no final
+  is_link_name "${rel}" || continue
+  [[ "${rel}" != "${WORKTREE_DIR_NAME}" && "${rel}" != "${WORKTREE_DIR_NAME}"/* ]] || continue
+
+  src="${REPO_ROOT}/${rel}"
+
+  if [[ -L "${src}" ]]; then
+    die "${rel} e um link simbolico; recusado (aponte para um arquivo ou diretorio real)"
+  fi
+  [[ -f "${src}" || -d "${src}" ]] || die "${rel} existe mas nao e arquivo regular nem diretorio"
+  [[ -r "${src}" ]] || die "${rel} existe mas nao e legivel"
+
+  real="$(realpath "${src}")"
+  [[ "${real}" == "${REPO_ROOT}/${rel}" ]] || die "${rel} resolve para fora do repositorio: ${real}"
+
+  if [[ -f "${src}" ]]; then
+    mode="$(stat -c '%a' "${src}")"
+    if [[ "${mode: -1}" != "0" ]]; then
+      warn "${rel} legivel por outros usuarios (modo ${mode}); considere chmod 600"
+    fi
+  fi
+
+  LINKS+=("${rel}")
 done
 
 # --- cria a worktree ------------------------------------------------------------

@@ -1,16 +1,20 @@
 ---
 name: herdr-pipeline
-description: Use ao implementar uma issue que passa por planejamento — orquestra o pipeline da seção "Distribuição de Papéis entre Modelos" do AGENTS.md: Claude/Opus planeja na worktree, o OpenCode implementa disparado pelo herdr, Claude/Haiku verifica os testes, Claude/Sonnet revisa e corrige, e a PR é atualizada sem merge.
+description: Somente para o Claude orquestrador (sessão principal, Opus) — o executor (OpenCode) e os subagentes NÃO usam esta skill. Use quando o usuário pedir para implementar uma issue que passa por planejamento: orquestra o pipeline da seção "Distribuição de Papéis entre Modelos" do AGENTS.md (Opus planeja na worktree, OpenCode implementa disparado pelo herdr, Haiku verifica testes e documenta, Sonnet revisa e corrige) e entrega a PR sem merge.
 managed-by: agents-bootstrap
 source: shared/skills/herdr-pipeline/SKILL.md
 ---
 
 # herdr-pipeline
 
-Orquestra uma issue de ponta a ponta. O Claude que roda esta skill é o
-**orquestrador**: a sessão principal com o modelo Opus. Ele planeja, dispara o
-OpenCode pelo herdr, delega verificação, revisão e correções a subagentes com o
-modelo de cada etapa e entrega a PR pronta para o usuário decidir o merge.
+> **Quem usa esta skill:** somente o Claude que orquestra, ou seja, a sessão
+> principal com o modelo Opus. Se você é o **executor** (OpenCode) ou um
+> **subagente** (Haiku, Sonnet), **não siga esta skill**. Siga apenas o pedido
+> que recebeu.
+
+Orquestra uma issue de ponta a ponta. O orquestrador planeja, dispara o OpenCode
+pelo herdr, delega verificação, documentação, revisão e correções a subagentes
+com o modelo de cada etapa e entrega a PR pronta para o usuário decidir o merge.
 
 Esta skill implementa a tabela "Distribuição de Papéis entre Modelos" do
 `AGENTS.md`. Se as duas divergirem, vale o `AGENTS.md`.
@@ -27,36 +31,43 @@ Esta skill implementa a tabela "Distribuição de Papéis entre Modelos" do
 -   Os subagentes de modelo fixo são abertos pela ferramenta de agente do
     Claude, com o parâmetro de modelo (`sonnet`, `haiku`). Não é preciso
     arquivo de agente.
+-   Os comandos do orquestrador têm limite de 600 s. Toda espera usa
+    `--timeout` menor que isso.
 
 ## Etapas
 
 | # | Etapa | Quem | Modelo |
 | - | ----- | ---- | ------ |
-| 1 | Planejamento: worktree, spec, plano, handoff, PR de docs | orquestrador | Opus |
+| 1 | Planejamento: worktree, linha de base dos testes, spec, plano, handoff, PR de docs | orquestrador | Opus |
 | 2 | Aprovação do plano | usuário | — |
 | 3 | Implementação | OpenCode via herdr | padrão configurado |
 | 4 | Conferência da entrega | orquestrador | Opus |
-| 5 | Verificação final dos testes | subagente | Haiku |
-| 6 | Revisão | subagente | Sonnet |
-| 7 | Correções da revisão | subagente | Sonnet |
-| 8 | Documentação e versão | subagente | Haiku |
+| 5 | Verificação dos testes | subagente | Haiku |
+| 6 | Documentação e versão | subagente | Haiku |
+| 7 | Revisão (código, documentação e versão) | subagente | Sonnet |
+| 8 | Correções da revisão | subagente | Sonnet |
 | 9 | Push, atualização da PR e relatório | orquestrador | Opus |
 
 ### 1. Planejamento (Opus)
 
-1.  Siga a skill `git`: a pergunta entre branch e worktree vale aqui. Neste
-    pipeline o modo é sempre **worktree**, criada pela skill `git-worktree`.
-    O executor, os subagentes e o orquestrador usam **a mesma worktree e a
-    mesma branch** do começo ao fim.
-2.  Leia a issue (`gh issue view <n>`) e escreva spec, plano e handoff na
+1.  **Worktree.** A pergunta entre branch e worktree da skill `git` já está
+    respondida por esta skill: **sempre worktree**, criada pela skill
+    `git-worktree`. Não pergunte. Orquestrador, executor e subagentes usam
+    **a mesma worktree e a mesma branch** do começo ao fim.
+2.  **Linha de base dos testes.** Antes de qualquer documento, rode na worktree
+    recém-criada (igual à `develop`) a suíte que `docs/guidelines/testing.md`
+    manda rodar antes de abrir PR. Anote o comando, a contagem e as falhas já
+    existentes. Isso vai para o handoff e é a referência da etapa 5.
+3.  Leia a issue (`gh issue view <n>`) e escreva spec, plano e handoff na
     worktree, onde o projeto guarda esses documentos.
-3.  Commit (sem trailer de sessão), push e abertura da PR com a skill
+4.  Commit (sem trailer de sessão), push e abertura da PR com a skill
     `github`. **Quem planeja escreve o trailer:** a última linha do corpo da
     PR é `claude-session: <id-da-sessão-do-orquestrador>`. O handoff informa
     esse ID e diz que ele deve ser mantido.
-4.  O handoff termina com uma seção **"Para o executor"**, contendo:
+5.  O handoff termina com uma seção **"Para o executor"**, contendo:
     -   caminho absoluto da worktree, branch e número da PR;
     -   o trailer da PR, que deve ser mantido sem alteração;
+    -   a linha de base dos testes;
     -   as regras do executor (abaixo) e o formato da entrega.
 
 ### 2. Aprovação (usuário)
@@ -88,19 +99,26 @@ herdr-core run --bg --name impl-<issue> --cwd <worktree-absoluta> \
 **Prompt do executor** (adapte só os campos entre `< >`):
 
 ```text
-Você é o executor da issue <issue>. Trabalhe somente em <worktree-absoluta>,
-na branch <branch>, que já está checada.
+Você é o EXECUTOR da issue <issue>. Não há usuário nesta sessão: não faça
+perguntas e não espere respostas. Se algo impedir seguir o plano, pare e
+registre na entrega.
 
-Leia e siga estritamente <caminho-do-handoff>, <caminho-do-spec> e
-<caminho-do-plano>. Não implemente nada fora deles. Se algo impedir seguir o
-plano, pare e registre na entrega em vez de improvisar.
+Trabalhe somente em <worktree-absoluta>, na branch <branch>, que já está
+checada. A escolha entre branch e worktree já foi feita: não pergunte, não crie
+outra branch ou worktree, não troque de branch.
+
+O planejamento já existe. Leia e siga estritamente <caminho-do-handoff>,
+<caminho-do-spec> e <caminho-do-plano>. Não implemente nada fora deles.
+Não use as skills herdr-pipeline, brainstorming nem writing-plans. Você
+implementa o plano: não o refaz, e não orquestra outros agentes.
 
 Regras:
-- siga o AGENTS.md e as skills git (commits) e de testes do projeto;
+- siga o AGENTS.md, as regras de commit da skill git e docs/guidelines/testing.md;
 - escreva os testes junto com o código e rode-os durante o trabalho;
 - faça commits na branch atual, sem trailer de sessão;
-- não faça push, não abra nem edite PR, não troque de branch, não faça merge;
-- não altere o trailer da PR (claude-session: <id>): ele pertence a quem planejou.
+- não faça push, não abra nem edite PR, não faça merge;
+- não altere o trailer da PR (claude-session: <id>): ele pertence a quem planejou;
+- não atualize a versão do projeto: isso é feito em outra etapa.
 
 Ao terminar, imprima exatamente este bloco como sua última saída:
 
@@ -116,7 +134,7 @@ Pendências: <nenhuma | lista>
 **Esperar o fim:**
 
 ```bash
-herdr-core wait impl-<issue> --timeout 600
+herdr-core wait impl-<issue> --timeout 540
 ```
 
 -   `"reason": "exit"` significa que terminou: siga para a etapa 4 com o
@@ -142,7 +160,7 @@ herdr-core wait impl-<issue> --timeout 600
     com a saída. Não corrija a implementação por conta própria.
 4.  Limpe o terminal: `herdr-core rm impl-<issue>`.
 
-### 5. Verificação final dos testes (Haiku)
+### 5. Verificação dos testes (Haiku)
 
 Subagente com modelo `haiku`, na worktree:
 
@@ -155,46 +173,62 @@ Subagente com modelo `haiku`, na worktree:
 -   devolva o comando, a contagem e a saída das falhas **sem interpretar nem
     corrigir**.
 
-Falhas novas em relação à `develop` vão para a revisão como achados.
+O orquestrador compara com a linha de base da etapa 1. Falhas que não estavam
+na linha de base vão para a revisão como achados.
 
-### 6. Revisão (Sonnet)
+### 6. Documentação e versão (Haiku)
+
+Subagente com modelo `haiku`, na mesma worktree e mesma branch:
+
+-   atualizar o que o plano manda documentar em `/docs`;
+-   aplicar a skill `application-version`: o incremento é decidido pelo tipo da
+    mudança, não pela quantidade de commits, então as correções da etapa 8 não
+    mudam a versão;
+-   commits na branch, sem trailer e sem push;
+-   devolver os arquivos alterados e a versão antiga e a nova.
+
+### 7. Revisão (Sonnet)
 
 Subagente com modelo `sonnet`, na worktree. Entregue a ele os caminhos de spec,
-plano e handoff, o diff `develop...HEAD` e o resultado da etapa 5. Peça:
+plano e handoff, o diff `develop...HEAD` (código, documentação e versão) e o
+resultado da etapa 5 com a linha de base. Peça:
 
 -   conformidade com spec, plano e `AGENTS.md`, incluindo arquitetura, testes
     e idioma do código;
 -   bugs de correção com cenário concreto de falha;
+-   documentação coerente com o código e incremento de versão coerente com a
+    skill `application-version`;
 -   achados ordenados por severidade, com `arquivo:linha`;
 -   nenhuma edição: só o relatório.
 
-### 7. Correções (Sonnet)
+### 8. Correções (Sonnet)
 
 Se houver achados confirmados, abra um subagente com modelo `sonnet` na mesma
 worktree e mesma branch:
 
 -   corrigir cada achado com teste que falha antes e passa depois;
+-   se a correção mudar comportamento documentado, ajustar o documento junto;
 -   commits na branch, sem trailer e sem push;
 -   devolver o que foi corrigido, o que não foi e por quê.
 
-Depois repita a etapa 5 (Haiku). Faça no máximo **2 rodadas** de revisão e
-correção. Se restar achado grave, pare e relate ao usuário.
-
-### 8. Documentação e versão (Haiku)
-
-Subagente com modelo `haiku`: atualizar o que o plano manda documentar em
-`/docs` e aplicar a skill `application-version` antes do último commit.
+Depois repita a etapa 5 (Haiku) e a etapa 7 (Sonnet). Faça no máximo
+**2 rodadas** de revisão e correção. Se restar achado grave, pare e relate ao
+usuário.
 
 ### 9. Push, PR e relatório (orquestrador)
 
-1.  `git -C <worktree> push`.
-2.  Atualize o corpo da PR (`gh pr edit`) com o resumo da implementação e o
-    plano de testes executado. **O trailer `claude-session: <id>` de quem
-    planejou continua como a última linha, sem alteração.**
-3.  Relate ao usuário:
+1.  Confirme que a última verificação da etapa 5 não tem falhas fora da linha
+    de base.
+2.  `git -C <worktree> push`.
+3.  Atualize o corpo da PR (`gh pr edit`) com o resumo da implementação, a
+    versão nova e o plano de testes executado. **O trailer
+    `claude-session: <id>` de quem planejou continua como a última linha, sem
+    alteração.**
+4.  Relate ao usuário:
     -   o link da PR;
     -   os commits;
-    -   os testes com os números reais;
+    -   os testes com os números reais e a comparação com a linha de base;
+    -   a versão;
     -   os achados corrigidos e os pendentes;
     -   os desvios do plano.
 
@@ -205,7 +239,8 @@ Subagente com modelo `haiku`: atualizar o que o plano manda documentar em
 
 -   Uma issue, uma worktree, uma branch, uma PR, do planejamento ao fim.
 -   O orquestrador não escreve código de produção. A implementação é do
-    OpenCode e as correções são do subagente Sonnet.
+    OpenCode, as correções são do subagente Sonnet, e a documentação e a
+    versão são do subagente Haiku.
 -   Saídas do OpenCode e dos subagentes são relatos a conferir, não fatos.
     Confira no git e nos testes antes de repassar.
 -   Qualquer bloqueio (permissão, falha de teste persistente, desvio do plano

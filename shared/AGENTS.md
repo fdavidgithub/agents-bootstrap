@@ -111,9 +111,9 @@ Regras:
 -   A revisão e as correções decorrentes dela são feitas pelo Claude com o modelo Sonnet.
 -   A documentação e a execução dos testes automatizados são feitas pelo Claude com o modelo Haiku.
 -   Quando houver planejamento, a orquestração dessas etapas (disparo do
-    OpenCode, verificação, documentação, correções e atualização da PR) segue a skill
-    `herdr-pipeline`, usada somente pelo Claude que orquestra. O executor
-    (OpenCode) e os subagentes não a utilizam.
+    OpenCode, verificação, documentação, revisão, correções e atualização da
+    PR) segue a skill `herdr-pipeline`, usada somente pelo Claude que
+    orquestra. O executor (OpenCode) e os subagentes não a utilizam.
 
 ### Exceção: implementação sem planejamento prévio
 

@@ -88,6 +88,43 @@ aplicação, conforme a estrutura do projeto.
 
 ------------------------------------------------------------------------
 
+## Distribuição de Papéis entre Modelos
+
+Cada etapa de uma tarefa deve ser executada pela ferramenta e pelo modelo
+indicados abaixo (sempre a última versão disponível de cada modelo):
+
+| Etapa                                                        | Ferramenta | Modelo                       |
+| ------------------------------------------------------------ | ---------- | ---------------------------- |
+| Planejamento (especificação, plano e handoff)                | Claude     | Opus                         |
+| Implementação do que foi definido na especificação, no planejamento e no handoff | OpenCode   | Modelo padrão configurado    |
+| Revisão do que foi implementado                              | Claude     | Sonnet                       |
+| Correções da implementação (a partir da revisão)             | Claude     | Sonnet                       |
+| Documentação                                                 | Claude     | Haiku                        |
+| Execução de testes automatizados                             | Claude     | Haiku                        |
+
+Regras:
+
+-   O planejamento de uma tarefa é sempre feito pelo Claude com o modelo Opus.
+-   A implementação segue estritamente o que foi documentado pelo Claude/Opus
+    na especificação, no planejamento e no handoff, e é executada pelo OpenCode
+    com o modelo configurado como padrão.
+-   A revisão e as correções decorrentes dela são feitas pelo Claude com o modelo Sonnet.
+-   A documentação e a execução dos testes automatizados são feitas pelo Claude com o modelo Haiku.
+
+### Exceção: implementação sem planejamento prévio
+
+Esta exceção só vale quando **não houver planejamento** gerado pelo Claude/Opus
+(brainstorm, documento de especificação e plano). Havendo planejamento, a
+implementação é sempre do OpenCode, conforme as regras acima.
+
+Sem planejamento, o Claude implementa diretamente, escolhendo o modelo pela complexidade:
+
+-   **Haiku**: quando a implementação for simples, por exemplo substituir
+    placeholders, escrever funções curtas ou isoladas.
+-   **Sonnet**: em qualquer outro caso.
+
+------------------------------------------------------------------------
+
 ## Quando a Documentação Estiver Ausente
 
 Se a documentação não especificar um padrão:
